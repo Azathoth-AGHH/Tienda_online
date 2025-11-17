@@ -126,7 +126,8 @@ public class BuscadorProductos {
             }
         });
 
-        popupSugerencias.setContent(listaSugerencias);
+        // LÍNEA 129 - CORREGIDO: Usar getContent().add() en lugar de setContent()
+        popupSugerencias.getContent().add(listaSugerencias);
         
         barra.getChildren().add(campoTexto);
         return barra;
@@ -181,15 +182,29 @@ public class BuscadorProductos {
 
     /**
      * Muestra el popup de sugerencias.
+     * LÍNEA 129 - CORREGIDO: Uso de coordenadas locales de escena
      */
     private void mostrarSugerencias() {
         if (!popupSugerencias.isShowing()) {
             try {
-                Bounds bounds = campoTexto.localToScreen(campoTexto.getBoundsInLocal());
-                popupSugerencias.show(campoTexto, bounds.getMinX() - campoTexto.getScene().getWindow().getX(), 
-                                     bounds.getMaxY() - campoTexto.getScene().getWindow().getY());
+                // Verificar que el campo de texto esté en una escena y ventana
+                if (campoTexto.getScene() != null && campoTexto.getScene().getWindow() != null) {
+                    // Obtener coordenadas locales del campo de texto en su escena
+                    Bounds boundsInScene = campoTexto.localToScene(campoTexto.getBoundsInLocal());
+                    
+                    // Obtener la ventana
+                    javafx.stage.Window window = campoTexto.getScene().getWindow();
+                    
+                    // Calcular posición en pantalla sumando las coordenadas de la ventana
+                    double x = window.getX() + boundsInScene.getMinX() + campoTexto.getScene().getX();
+                    double y = window.getY() + boundsInScene.getMaxY() + campoTexto.getScene().getY();
+                    
+                    // Mostrar el popup
+                    popupSugerencias.show(window, x, y);
+                }
             } catch (Exception e) {
                 System.err.println("Error mostrando sugerencias: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }
